@@ -243,10 +243,22 @@ class Lighthouse(object):
 		"""Pulls in all the projects available and populates them with
 		their properties"""
 		self.get_projects()
-		for p in self.projects:
-			self.get_tickets(p)
 		return
 		
+	def fetch_tickets(self) :
+		"""Pulls in all the tickets available and populates them with
+		their properties"""
+		for p in self.projects :
+			self.get_tickets( p )
+		return
+
+	def fetch_all_tickets(self) :
+		"""Pulls in all the tickets available and populates them with
+		their properties"""
+		for p in self.projects :
+			self.get_all_tickets( p )
+		return
+
 	def get_projects(self):
 		"""Retrieves all available projects
 		
