@@ -13,13 +13,24 @@
 #  Created by Clinton Ecker on 2009-01-31.
 #  Copyright 2009 Clint Ecker. All rights reserved.
 # 
+# //////////////////////////////////////////////////////////////////////
+# 
+#  Modified Version by Kjuly ( Kj Yu )
+#  Author URL : http://kjuly.com
+#
+#  Description: 
+#	 It's modified and used for DevStats Project( thePlant Co. Ltd. )
+#
+#  Added Funs:
+#    User
+# 
 import urllib2
 from urllib2 import HTTPError
 import os.path
 import pprint
 from xmltodict import xmltodict
-from dateutil.parser import *
-from dateutil.tz import *
+#from dateutil.parser import *
+#from dateutil.tz import *
 
 
 class Lighthouse(object):
@@ -42,7 +53,8 @@ class Lighthouse(object):
 		>>> lh._datetime('2009-01-31T15:42:18-08:00')
 		datetime.datetime(2009, 1, 31, 15, 42, 18, tzinfo=tzoffset(None, -28800))
 		"""
-		return parse(data)
+		#return parse(data)
+		pass
 	
 	def _integer(self, data):
 		"""Returns a literal integer object from a string"
