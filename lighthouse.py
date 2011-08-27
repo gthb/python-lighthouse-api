@@ -225,8 +225,17 @@ class Lighthouse(object):
 			field_value = self._array(field)
 
 		elif field_type and (field_value is not None):
-			converter = getattr(self,'_'+field_type)
-			field_value = converter(field_value)
+			if field_type == "datetime" :
+				field_value = str(field_value)
+			else :
+				converter = getattr(self,'_'+field_type)
+				field_value = converter(field_value)
+		"""
+		print( field_name )
+		print( field_type )
+		print( field_value )
+		print( '-------------' )
+		"""
 		
 		return (field_name, field_value, field_type)
 	
