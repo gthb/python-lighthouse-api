@@ -38,9 +38,10 @@ class Lighthouse(object):
 	
 	def __init__(self, token=None, url=None):
 		#super(Lighthouse, self).__init__()
-		self.token = token
-		self.url = url
-		self.projects = []
+		self.token		= token
+		self.url		= url
+		self.projects	= []
+		self.user		= User()
 	
 	def _datetime(self, data):
 		"""Returns a datetime object representation of string
@@ -377,6 +378,22 @@ class Lighthouse(object):
 
 		return ticket
 			
+	def get_user( self ) :
+		"""Retrieves the tokens
+		"""
+		path	= User.endpoint_token % ( self.token )
+		token	= self._get_data( path )
+
+		if( token.get('children', None) ) :
+			for field in token['children'] :
+				#m_obj = User()
+				field_name, field_value, field_type = self._parse_field( field )
+				py_field_name = field_name.replace('-', '_')
+				self.user.__setattr__( py_field_name, field_value )
+				self.user.fields.add( py_field_name )
+			#project.user.append( m_obj )
+			#self.user = m_obj
+
 	def get_members( self, project ) :
 		"""Retrieves all the members in a project
 		"""
@@ -501,9 +518,12 @@ class Member(object):
 
 class User(object):
 	"""A user"""
-	def __init__(self, arg):
+	endpoint_token	= 'tokens/%s.xml'
+	endpoint_user	= 'users/%d.xml'
+
+	def __init__( self ):
 		super(User, self).__init__()
-		self.arg = arg
+		self.fields = set();
 		
 if __name__ == "__main__":
 	import doctest
