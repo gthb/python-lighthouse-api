@@ -105,12 +105,12 @@ def xmltodict(xml, attsToSkip=[]):
 	"""Given an xml string or file, return a Python dictionary."""
 	parser = Xml2Obj()
 	parser.attsToSkip = attsToSkip
-	if os.linesep not in xml and os.path.exists(xml):
+	#if os.linesep not in xml and os.path.exists(xml):
 		# argument was a file
-		return parser.ParseFromFile(xml)
-	else:
+	#	return parser.ParseFromFile(xml)
+	#else:
 		# argument must have been raw xml:
-		return parser.Parse(xml)
+	return parser.Parse(xml)
 
 
 def dicttoxml(dct, level=0, header=None, linesep=None):

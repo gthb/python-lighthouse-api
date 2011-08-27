@@ -3,3 +3,4 @@
 *~
 .*.sw[po]
 tags
+__init__.py
