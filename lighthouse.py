@@ -42,6 +42,7 @@ class Lighthouse(object):
 		self.url		= url
 		self.projects	= []
 		self.user		= User()
+		self.token_tail	= None #'_token=%s' % self.token
 	
 	def _datetime(self, data):
 		"""Returns a datetime object representation of string
@@ -175,9 +176,14 @@ class Lighthouse(object):
 		"""
 		if self.url != None:
 			endpoint = os.path.join(self.url, path)
-			req = urllib2.Request(endpoint)
+			#req = urllib2.Request(endpoint)
 			if self.token:
-				req.add_header('X-LighthouseToken', self.token)
+				if endpoint[-3:] == 'xml' :
+					endpoint = '%s?%s' % ( endpoint, self.token_tail )
+				else :
+					endpoint = '%s&%s' % ( endpoint, self.token_tail )
+				#req.add_header('X-LighthouseToken', self.token)
+			req  = urllib2.Request(endpoint)
 			resp = urllib2.urlopen(req)
 			data = resp.read()
 			return self._parse_xml(data)
