@@ -286,13 +286,14 @@ class Lighthouse(object):
 		path = Project.endpoint
 		project_list = self._get_data(path)
 		projects = []
-		for project in project_list['children']:
-			p_obj = Project()
-			for field in project['children']:
-				field_name, field_value, field_type = self._parse_field(field)
-				p_obj.__setattr__(field_name.replace('-', '_'), field_value)
-			projects.append(p_obj)
-		self.projects = projects
+		if project_list.has_key('children') :
+			for project in project_list['children']:
+				p_obj = Project()
+				for field in project['children']:
+					field_name, field_value, field_type = self._parse_field(field)
+					p_obj.__setattr__(field_name.replace('-', '_'), field_value)
+				projects.append(p_obj)
+			self.projects = projects
 		return
 	
 	def get_all_tickets(self, project):
