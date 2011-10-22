@@ -264,11 +264,11 @@ class Lighthouse(object):
 			self.get_tickets( p )
 		return
 
-	def fetch_all_tickets(self) :
+	def fetch_all_tickets(self, page_start, page_end) :
 		"""Pulls in all the tickets available and populates them with
 		their properties"""
 		for p in self.projects :
-			self.get_all_tickets( p )
+			self.get_all_tickets( p, page_start, page_end )
 		return
 
 	def get_projects(self):
@@ -296,7 +296,7 @@ class Lighthouse(object):
 			self.projects = projects
 		return
 	
-	def get_all_tickets(self, project):
+	def get_all_tickets(self, project, page_start, page_end):
 		"""Populates the project with all existing tickets
 		
 		>>> lh = Lighthouse()
@@ -309,9 +309,9 @@ class Lighthouse(object):
 		>>>
 		"""
 		c = 30
-		page = 1
+		page = page_start
 		ticket_count = 0
-		while c == 30:
+		while c == 30 and page < page_end :
 			c = self.get_tickets(project, page)
 			ticket_count += c
 			page += 1
