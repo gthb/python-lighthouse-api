@@ -27,10 +27,7 @@
 import urllib2
 from urllib2 import HTTPError
 import os.path
-import pprint
 from xmltodict import xmltodict
-#from dateutil.parser import *
-#from dateutil.tz import *
 
 
 class Lighthouse(object):
