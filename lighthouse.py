@@ -373,8 +373,8 @@ class User(object):
 
     def __init__( self ):
         super(User, self).__init__()
-        self.fields = set();
-        
+        self.fields = set()
+
 
 def parse_field(field):
     field_type = None
