@@ -91,10 +91,11 @@ class Lighthouse(object):
             raise ValueError('Please set token properly')
         endpoint = os.path.join(self.url, path)
         headers = { 
-            'Content-Type' : 'application/xml',
-            'X-LighthouseToken' : self.token,
+            'Content-Type': 'application/xml; charset=utf-8',
+            'X-LighthouseToken': self.token.encode('ascii'),
         }
-        req = urllib2.Request(endpoint, data, headers)
+        req = urllib2.Request(endpoint.encode('ascii'),
+                              data.encode('utf-8'), headers)
         try:
             response = urllib2.urlopen(req)
         except HTTPError, response:
