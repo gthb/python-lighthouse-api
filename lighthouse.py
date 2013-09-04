@@ -43,116 +43,7 @@ class Lighthouse(object):
         self.projects   = []
         self.user       = User()
         self.token_tail = None #'_token=%s' % self.token
-    
-    def _datetime(self, data):
-        """Returns a datetime object representation of string
-        
-        >>> lh = Lighthouse()
-        >>> lh._datetime('2008-09-25T20:04:13+01:00')
-        datetime.datetime(2008, 9, 25, 20, 4, 13, tzinfo=tzoffset(None, 3600))
-        >>> lh._datetime('2009-01-26T16:47:00-08:00')
-        datetime.datetime(2009, 1, 26, 16, 47, tzinfo=tzoffset(None, -28800))
-        >>> lh._datetime('2009-01-31T15:42:18-08:00')
-        datetime.datetime(2009, 1, 31, 15, 42, 18, tzinfo=tzoffset(None, -28800))
-        """
-        #return parse(data)
-        pass
-    
-    def _integer(self, data):
-        """Returns a literal integer object from a string"
-        
-        >>> lh = Lighthouse()
-        >>> lh._integer('10')
-        10
-        >>> lh._integer('True')
-        Traceback (most recent call last):
-        ...
-        ValueError: invalid literal for int() with base 10: 'True'
-        >>> lh._integer('23.5')
-        Traceback (most recent call last):
-        ...
-        ValueError: invalid literal for int() with base 10: '23.5'
-        """""
-        if data:
-            return int(data,10)
-        else:
-            return None
-    
-    def _boolean(self, data):
-        """Returns True or False from a string
-        
-        >>> lh = Lighthouse()
-        >>> lh._boolean('1')
-        True
-        >>> lh._boolean('2')
-        False
-        >>> lh._boolean('true')
-        True
-        >>> lh._boolean('True')
-        True
-        >>> lh._boolean('false')
-        False
-        >>> lh._boolean('False')
-        False
-        >>> lh._boolean(1)
-        True
-        >>> lh._boolean(2)
-        False
-        >>> lh._boolean(0)
-        False
-        """
-        if data == 'true' or data == 'True' or data == '1' or data == 1:
-            return True
-        else:
-            return False
-    
-    def _string(self, data):
-        """Returns a...uh string from a bit of data
-        
-        >>> lh = Lighthouse()
-        >>> lh._string('lol')
-        'lol'
-        >>> lh._string(1)
-        '1'
-        >>> lh._string(True)
-        'True'
-        >>> lh._string('2008-09-25T20:04:13+01:00')
-        '2008-09-25T20:04:13+01:00'
-        >>> lh._datetime('2008-09-25T20:04:13+01:00')
-        datetime.datetime(2008, 9, 25, 20, 4, 13, tzinfo=tzoffset(None, 3600))
-        >>> lh._string(_)
-        '2008-09-25 20:04:13+01:00'
-        """
-        return str(data)
 
-    def _yaml(self, data):
-        return self._string(data)
-    
-    def _nil(self, data):
-        """Returns None
-        
-        >>> lh = Lighthouse()
-        >>> lh._nil('lol')
-        >>> lh._nil(1)
-        >>> lh._nil(True)
-        >>> lh._nil('2008-09-25T20:04:13+01:00')
-        >>> lh._datetime('2008-09-25T20:04:13+01:00')
-        datetime.datetime(2008, 9, 25, 20, 4, 13, tzinfo=tzoffset(None, 3600))
-        >>> lh._nil(_)
-        """
-        return None
-    
-    def _array(self, data):
-        """Returns an array
-        """
-        r = []
-        for item in data['children']:
-            item_obj = {}
-            for field in item['children']:
-                field_name, field_value, field_type = self._parse_field(field)
-                item_obj[field_name.replace('-', '_')] = field_value
-            r.append(item_obj)
-        return r
 
     def _get_data(self, path):
         """Takes a path, joins it with the project's URL and grabs that 
@@ -186,7 +77,7 @@ class Lighthouse(object):
             req  = urllib2.Request(endpoint)
             resp = urllib2.urlopen(req)
             data = resp.read()
-            return self._parse_xml(data)
+            return parse_xml(data)
         else:
             raise ValueError('Please set url properly')
     
@@ -210,41 +101,8 @@ class Lighthouse(object):
                 raise
         else:
             raise
-        return self._parse_xml(data)
+        return parse_xml(data)
             
-    def _parse_xml(self, xmldata):
-        return xmltodict(xmldata)
-    
-    def _parse_field(self, field):
-        field_type = None
-        field_name = None
-        field_attributes = None
-        converter = None
-        
-        attributes = field.get('attributes', {})
-        field_value = field.get('cdata', None)
-        field_name = field.get('name', None)
-        
-        if attributes:
-            field_type = attributes.get('type', None)
-
-        if field_type == "array":
-            field_value = self._array(field)
-
-        elif field_type and (field_value is not None):
-            if field_type == "datetime" :
-                field_value = str(field_value)
-            else :
-                converter = getattr(self,'_'+field_type)
-                field_value = converter(field_value)
-        """
-        print( field_name )
-        print( field_type )
-        print( field_value )
-        print( '-------------' )
-        """
-        
-        return (field_name, field_value, field_type)
     
     def init(self):
         """Pulls in all the projects available and populates them with
@@ -366,7 +224,7 @@ class Lighthouse(object):
                     t_obj = Ticket()
                     for field in ticket['children']:
                         field_name, field_value, field_type = \
-                            self._parse_field(field)
+                            parse_field(field)
                         py_field_name = field_name.replace('-', '_')
                         t_obj.__setattr__(py_field_name, field_value)
                         t_obj.fields.add(py_field_name)
@@ -378,7 +236,7 @@ class Lighthouse(object):
         ticket_data = self._get_data(path)
 
         for field in ticket_data['children']:
-            field_name, field_value, field_type = self._parse_field(field)
+            field_name, field_value, field_type = parse_field(field)
             py_field_name = field_name.replace('-', '_')
             ticket.__setattr__(py_field_name, field_value)
             ticket.fields.add(py_field_name)
@@ -394,7 +252,7 @@ class Lighthouse(object):
         if( token.get('children', None) ) :
             for field in token['children'] :
                 #m_obj = User()
-                field_name, field_value, field_type = self._parse_field( field )
+                field_name, field_value, field_type = parse_field(field)
                 py_field_name = field_name.replace('-', '_')
                 self.user.__setattr__( py_field_name, field_value )
                 self.user.fields.add( py_field_name )
@@ -414,12 +272,12 @@ class Lighthouse(object):
             for member in member_list['children'] :
                 m_obj = Member()
                 for field in member['children']:
-                    field_name, field_value, field_type = self._parse_field( field )
+                    field_name, field_value, field_type = parse_field(field)
                     # Deep into sub level
                     if( field.get('children', None) ) :
                         set_sub = {}
                         for field_sub in field['children'] :
-                            field_name_s, field_value_s, field_type_s = self._parse_field( field_sub )
+                            field_name_s, field_value_s, field_type_s = parse_field(field_sub)
                             py_field_name_s = field_name_s.replace('-', '_')
                             set_sub[ py_field_name_s ] = field_value_s
                         m_obj.__setattr__( field_name, set_sub )
@@ -454,8 +312,7 @@ class Lighthouse(object):
         new_ticket = self._post_data(path, data)
         t_obj = Ticket()
         for field in new_ticket['children']:
-            field_name, field_value, field_type = \
-                self._parse_field(field)
+            field_name, field_value, field_type = parse_field(field)
             t_obj.__setattr__(field_name.replace('-', '_'),\
                 field_value)
         return t_obj
@@ -532,6 +389,64 @@ class User(object):
         super(User, self).__init__()
         self.fields = set();
         
+
+def parse_field(field):
+    field_type = None
+
+    attributes = field.get('attributes', {})
+    field_value = field.get('cdata', None)
+    field_name = field.get('name', None)
+
+    if attributes:
+        field_type = attributes.get('type', None)
+
+    if field_type == "array":
+        field_value = parse_array(field)
+
+    elif field_type and (field_value is not None):
+        if field_type == "datetime" :
+            field_value = str(field_value)
+        else :
+            converter = __module_locals.get('parse_' + field_type)
+            field_value = converter(field_value)
+
+    return field_name, field_value, field_type
+
+
+def parse_array(data):
+    """Returns an array """
+    r = []
+    for item in data['children']:
+        item_obj = {}
+        for field in item['children']:
+            field_name, field_value, field_type = parse_field(field)
+            item_obj[field_name.replace('-', '_')] = field_value
+        r.append(item_obj)
+    return r
+
+
+parse_string = str
+
+parse_yaml = parse_string
+
+parse_nil = lambda: None
+
+
+def parse_boolean(data):
+    return data in ('true', 'True', '1', 1)
+
+
+def parse_integer(data):
+    return int(data, 10) if data else None
+
+
+def parse_xml(xmldata):
+    return xmltodict(xmldata)
+
+
+__module_locals = locals()
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod(optionflags=doctest.IGNORE_EXCEPTION_DETAIL)
