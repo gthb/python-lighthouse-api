@@ -34,13 +34,25 @@ class Lighthouse(object):
     """The main lighthouse object for managing the connection"""
     
     def __init__(self, token=None, url=None):
-        #super(Lighthouse, self).__init__()
-        self.token      = token
-        self.url        = url
-        self.projects   = []
-        self.user       = User()
+        self.token = token
+        self.url = url
+        self._projects = None
+        self.user = User()
         self.token_tail = None #'_token=%s' % self.token
 
+    @property
+    def projects(self):
+        """Lazy-load projects once"""
+        if self._projects is None:
+            self._projects = self.get_projects()
+        return self._projects
+
+    def get_project(self, name):
+        try:
+            return (p for p in self.projects
+                    if p.name == name or p.id == name or str(p.id) == name).next()
+        except StopIteration:
+            return None
 
     def _get_data(self, path):
         """Takes a path, joins it with the project's URL and grabs that 
@@ -100,13 +112,6 @@ class Lighthouse(object):
             raise
         return parse_xml(data)
             
-    
-    def init(self):
-        """Pulls in all the projects available and populates them with
-        their properties"""
-        self.get_projects()
-        return
-        
     def fetch_members(self) :
         for p in self.projects :
             self.get_members( p ) # Get Members
@@ -131,7 +136,6 @@ class Lighthouse(object):
         
         >>> lh = Lighthouse()
         >>> lh.url = 'http://ars.lighthouseapp.com'
-        >>> lh.init()
         >>> project = lh.projects[0]
         >>> len(lh.projects)
         1
@@ -141,23 +145,20 @@ class Lighthouse(object):
         path = Project.endpoint
         project_list = self._get_data(path)
         projects = []
-        if project_list.has_key('children') :
-            for project in project_list['children']:
-                p_obj = Project()
-                for field in project['children']:
-                    field_name, field_value, field_type = self._parse_field(field)
-                    p_obj.__setattr__(field_name.replace('-', '_'), field_value)
-                projects.append(p_obj)
-            self.projects = projects
-        return
-    
+        for project in project_list.get('children', ()):
+            p = Project()
+            for field in project['children']:
+                field_name, field_value, field_type = parse_field(field)
+                setattr(p, field_name.replace('-', '_'), field_value)
+            projects.append(p)
+        return projects
+
     def get_all_tickets(self, project, page_start, page_end):
         """Populates the project with all existing tickets
         
         >>> lh = Lighthouse()
         >>> lh = Lighthouse()
         >>> lh.url = 'http://ars.lighthouseapp.com'
-        >>> lh.init()
         >>> project = lh.projects[0]
         >>> lh.get_all_tickets(project)
         
@@ -176,7 +177,6 @@ class Lighthouse(object):
         
         >>> lh = Lighthouse()
         >>> lh.url = 'http://ars.lighthouseapp.com'
-        >>> lh.init()
         >>> project = lh.projects[0]
         >>> lh.get_tickets(project)
         30
@@ -286,21 +286,17 @@ class Lighthouse(object):
                         m_obj.fields.add( py_field_name )
                 project.members.append( m_obj )
 
-    def get_users(self, name):
-        pass
-        
     def add_ticket(self, project=None, title=None, body=None):
-        if project is None or isinstance(project, str):
-            if(len(self.projects) == 0):
-                self.init()
+        if project is None:
             project = self.projects[0]
             project_id = project.id
-        elif isinstance(project, int):
-            project_id = project
         elif isinstance(project, Project):
             project_id = project.id
         else:
-            raise ValueError('Couldn\'t find a project matching \''+project+'\'')
+            project = self.get_project(project)
+            project_id = project.id
+            if project is None:
+                raise ValueError('Couldn\'t find a project matching \''+project+'\'')
         path = Ticket.endpoint % (project_id,)
         data = Ticket.creation_xml % {
             'body':body, 
