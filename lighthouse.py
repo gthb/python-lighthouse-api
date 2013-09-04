@@ -38,7 +38,6 @@ class Lighthouse(object):
         self.url = url
         self._projects = None
         self.user = User()
-        self.token_tail = None #'_token=%s' % self.token
 
     @property
     def projects(self):
@@ -76,14 +75,9 @@ class Lighthouse(object):
         """
         if self.url != None:
             endpoint = os.path.join(self.url, path)
-            #req = urllib2.Request(endpoint)
+            req = urllib2.Request(endpoint)
             if self.token:
-                if endpoint[-3:] == 'xml' :
-                    endpoint = '%s?%s' % ( endpoint, self.token_tail )
-                else :
-                    endpoint = '%s&%s' % ( endpoint, self.token_tail )
-                #req.add_header('X-LighthouseToken', self.token)
-            req  = urllib2.Request(endpoint)
+                req.add_header('X-LighthouseToken', self.token)
             resp = urllib2.urlopen(req)
             data = resp.read()
             return parse_xml(data)
