@@ -339,12 +339,11 @@ class Project(object):
         self.members = []   # Members
         self.milestones = []
         self.messages = []
+        self.name = None
 
     def __repr__(self):
-        if self.name:
-            return "Project: %s" % (self.name,)
-        else:
-            return "Project: Unnamed"
+        return "Project: %s" % (self.name or 'Unnamed',)
+
 
 class Milestone(object):
     """Milestones reference tickets"""
