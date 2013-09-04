@@ -103,7 +103,7 @@ class Lighthouse(object):
             else:
                 raise
         else:
-            raise
+            data = response.read()
         return parse_xml(data)
             
     def fetch_members(self) :
