@@ -28,6 +28,7 @@ import urllib2
 from urllib2 import HTTPError
 import os.path
 from xmltodict import xmltodict
+from xml.sax.saxutils import escape
 
 
 class Lighthouse(object):
@@ -294,8 +295,8 @@ class Lighthouse(object):
                 raise ValueError('Couldn\'t find a project matching \''+project+'\'')
         path = Ticket.endpoint % (project_id,)
         data = Ticket.creation_xml % {
-            'body':body, 
-            'title':title,
+            'body': escape(body),
+            'title': escape(title),
         }
         new_ticket = self._post_data(path, data)
         t_obj = Ticket()
